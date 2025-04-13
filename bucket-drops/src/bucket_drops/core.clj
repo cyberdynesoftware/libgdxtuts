@@ -24,9 +24,8 @@
   (ScreenUtils/clear Color/BLACK)
   (.apply (:viewport @resources))
   (.setProjectionMatrix (:sprite-batch @resources) (.combined (.getCamera (:viewport @resources))))
-  (println (type (:bucket @resources)))
   (.begin (:sprite-batch @resources))
-  (.draw (:sprite-batch @resources) (:bucket @resources) 0.0 0.0 1.0 1.0)
+  (.draw (:sprite-batch @resources) (:bucket @resources) (float 0) (float 0) (float 1) (float 1))
   (.end (:sprite-batch @resources)))
 
 (def mygame (proxy [ApplicationAdapter] []
