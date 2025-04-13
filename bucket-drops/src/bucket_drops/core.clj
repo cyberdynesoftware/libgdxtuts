@@ -21,12 +21,15 @@
   )
 
 (defn draw []
-  (ScreenUtils/clear Color/BLACK)
-  (.apply (:viewport @resources))
-  (.setProjectionMatrix (:sprite-batch @resources) (.combined (.getCamera (:viewport @resources))))
-  (.begin (:sprite-batch @resources))
-  (.draw (:sprite-batch @resources) (:bucket @resources) (float 0) (float 0) (float 1) (float 1))
-  (.end (:sprite-batch @resources)))
+  (let [sprite-batch (:sprite-batch @resources)
+        viewport (:viewport @resources)]
+    (ScreenUtils/clear Color/BLACK)
+    (.apply viewport)
+    (.setProjectionMatrix sprite-batch (.. viewport getCamera combined))
+    (.begin sprite-batch)
+    (.draw sprite-batch (:background @resources) (float 0) (float 0) (.getWorldWidth viewport) (.getWorldHeight viewport))
+    (.draw sprite-batch (:bucket @resources) (float 0) (float 0) (float 1) (float 1))
+    (.end sprite-batch)))
 
 (def mygame (proxy [ApplicationAdapter] []
              (create [] (reset! resources
