@@ -4,7 +4,8 @@
            [com.badlogic.gdx.graphics Texture Color]
            [com.badlogic.gdx.graphics.g2d SpriteBatch Sprite]
            [com.badlogic.gdx.utils.viewport Viewport FitViewport]
-           [com.badlogic.gdx.utils ScreenUtils])
+           [com.badlogic.gdx.utils ScreenUtils]
+           [com.badlogic.gdx.math Vector2])
   (:gen-class))
 
 (def config (doto (new Lwjgl3ApplicationConfiguration)
@@ -15,9 +16,17 @@
 (def resources (atom nil))
 
 (defn input []
-  (let [speed (float 0.25)]
+  (let [speed (float 0.25)
+        delta (.getDeltaTime Gdx/graphics)]
     (when (.isKeyPressed Gdx/input Input$Keys/RIGHT)
-      (.translateX (:bucket-sprite @resources) speed))))
+      (.translateX (:bucket-sprite @resources) (* speed delta)))
+    (when (.isKeyPressed Gdx/input Input$Keys/LEFT)
+      (.translateX (:bucket-sprite @resources) (* speed delta -1))))
+  (let [touch-pos (new Vector2)]
+    (when (.isTouched Gdx/input)
+      (.set touch-pos (.getX Gdx/input) (.getY Gdx/input))
+      (.unproject (:viewport @resources) touch-pos)
+      (.setCenterX (:bucket-sprite @resources) (.x touch-pos)))))
 
 (defn logic []
   )
@@ -45,7 +54,8 @@
                            :sound (.newSound Gdx/audio (.internal Gdx/files "resources/drop.mp3"))
                            :music (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
                            :sprite-batch (new SpriteBatch)
-                           :viewport (new FitViewport 8 5)})))
+                           :viewport (new FitViewport 8 5)
+                           :touch-pos (new Vector2)})))
              (resize [width height]
                (Viewport/.update (:viewport @resources) width height true))
              (render []
