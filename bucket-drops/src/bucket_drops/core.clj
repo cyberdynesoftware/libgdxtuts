@@ -1,8 +1,8 @@
 (ns bucket-drops.core
   (:import [com.badlogic.gdx.backends.lwjgl3 Lwjgl3Application Lwjgl3ApplicationConfiguration]
-           [com.badlogic.gdx ApplicationAdapter Gdx Files Audio]
+           [com.badlogic.gdx ApplicationAdapter Gdx Files Audio Input$Keys]
            [com.badlogic.gdx.graphics Texture Color]
-           [com.badlogic.gdx.graphics.g2d SpriteBatch]
+           [com.badlogic.gdx.graphics.g2d SpriteBatch Sprite]
            [com.badlogic.gdx.utils.viewport Viewport FitViewport]
            [com.badlogic.gdx.utils ScreenUtils])
   (:gen-class))
@@ -15,7 +15,9 @@
 (def resources (atom nil))
 
 (defn input []
-  )
+  (let [speed (float 0.25)]
+    (when (.isKeyPressed Gdx/input Input$Keys/RIGHT)
+      (.translateX (:bucket-sprite @resources) speed))))
 
 (defn logic []
   )
@@ -28,20 +30,28 @@
     (.setProjectionMatrix sprite-batch (.. viewport getCamera combined))
     (.begin sprite-batch)
     (.draw sprite-batch (:background @resources) (float 0) (float 0) (.getWorldWidth viewport) (.getWorldHeight viewport))
-    (.draw sprite-batch (:bucket @resources) (float 0) (float 0) (float 1) (float 1))
+    (.draw (:bucket-sprite @resources) sprite-batch)
     (.end sprite-batch)))
 
 (def mygame (proxy [ApplicationAdapter] []
-             (create [] (reset! resources
-                                {:bucket (new Texture "resources/bucket.png")
-                                 :background (new Texture "resources/background.png")
-                                 :drop (new Texture "resources/drop.png")
-                                 :sound (.newSound Gdx/audio (.internal Gdx/files "resources/drop.mp3"))
-                                 :music (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
-                                 :sprite-batch (new SpriteBatch)
-                                 :viewport (new FitViewport 8 5)}))
-             (resize [width height] (Viewport/.update (:viewport @resources) width height true))
-             (render [] (input) (logic) (draw))))
+              (create []
+                (let [bucket-texture (new Texture "resources/bucket.png")
+                      bucket-sprite (new Sprite bucket-texture)]
+                  (.setSize bucket-sprite 1 1)
+                  (reset! resources
+                          {:bucket-sprite bucket-sprite
+                           :background (new Texture "resources/background.png")
+                           :drop (new Texture "resources/drop.png")
+                           :sound (.newSound Gdx/audio (.internal Gdx/files "resources/drop.mp3"))
+                           :music (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
+                           :sprite-batch (new SpriteBatch)
+                           :viewport (new FitViewport 8 5)})))
+             (resize [width height]
+               (Viewport/.update (:viewport @resources) width height true))
+             (render []
+               (input)
+               (logic)
+               (draw))))
 
 (defn -main
   "A simple game tutorial for libgdx"
