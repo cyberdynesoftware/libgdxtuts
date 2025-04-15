@@ -4,8 +4,8 @@
            [com.badlogic.gdx.graphics Texture Color]
            [com.badlogic.gdx.graphics.g2d SpriteBatch Sprite]
            [com.badlogic.gdx.utils.viewport Viewport FitViewport]
-           [com.badlogic.gdx.utils ScreenUtils]
-           [com.badlogic.gdx.math Vector2])
+           [com.badlogic.gdx.utils ScreenUtils Array]
+           [com.badlogic.gdx.math Vector2 MathUtils])
   (:gen-class))
 
 (def config (doto (new Lwjgl3ApplicationConfiguration)
@@ -14,6 +14,8 @@
               (.setWindowIcon (into-array ["resources/bucket.png"]))))
 
 (def resources (atom nil))
+
+(def drop-timer (atom (float 0)))
 
 (defn input []
   (let [speed (float 0.25)
@@ -28,8 +30,24 @@
       (.unproject (:viewport @resources) touch-pos)
       (.setCenterX (:bucket-sprite @resources) (.x touch-pos)))))
 
+(defn create-droplet [texture]
+  (doto (new Sprite texture)
+    (.setSize (float 1) (float 1))
+    (.setX (MathUtils/random (float 0) (float (- (.getWorldWidth (:viewport @resources)) 1))))
+    (.setY (.getWorldHeight (:viewport @resources)))))
+
 (defn logic []
-  )
+  (let [bucket-sprite (:bucket-sprite @resources)
+        viewport (:viewport @resources)]
+    (.setX bucket-sprite (MathUtils/clamp (.getX bucket-sprite)
+                                          (float 0)
+                                          (float (- (.getWorldWidth viewport) (.getWidth bucket-sprite))))))
+  (let [delta (.getDeltaTime Gdx/graphics)]
+    (doseq [it (:drop-sprites @resources)]
+      (.translateY it (float (* -2 delta))))
+    (when (> (swap! drop-timer #(float (+ % delta))) 1)
+      (reset! drop-timer (float 0))
+      (.add (:drop-sprites @resources) (create-droplet (:drop @resources))))))
 
 (defn draw []
   (let [sprite-batch (:sprite-batch @resources)
@@ -40,6 +58,8 @@
     (.begin sprite-batch)
     (.draw sprite-batch (:background @resources) (float 0) (float 0) (.getWorldWidth viewport) (.getWorldHeight viewport))
     (.draw (:bucket-sprite @resources) sprite-batch)
+    (doseq [it (:drop-sprites @resources)]
+      (.draw it sprite-batch))
     (.end sprite-batch)))
 
 (def mygame (proxy [ApplicationAdapter] []
@@ -55,7 +75,7 @@
                            :music (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
                            :sprite-batch (new SpriteBatch)
                            :viewport (new FitViewport 8 5)
-                           :touch-pos (new Vector2)})))
+                           :drop-sprites (new Array)})))
              (resize [width height]
                (Viewport/.update (:viewport @resources) width height true))
              (render []
