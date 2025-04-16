@@ -17,6 +17,8 @@
 
 (def drop-timer (atom (float 0)))
 
+(def drop-sprites (atom []))
+
 (defn input []
   (let [speed (float 0.25)
         delta (.getDeltaTime Gdx/graphics)]
@@ -38,16 +40,21 @@
 
 (defn logic []
   (let [bucket-sprite (:bucket-sprite @resources)
-        viewport (:viewport @resources)]
+        viewport (:viewport @resources)
+        delta (.getDeltaTime Gdx/graphics)]
     (.setX bucket-sprite (MathUtils/clamp (.getX bucket-sprite)
                                           (float 0)
-                                          (float (- (.getWorldWidth viewport) (.getWidth bucket-sprite))))))
-  (let [delta (.getDeltaTime Gdx/graphics)]
-    (doseq [it (:drop-sprites @resources)]
-      (.translateY it (float (* -2 delta))))
+                                          (float (- (.getWorldWidth viewport) (.getWidth bucket-sprite)))))
+    (doseq [it @drop-sprites]
+      (.translateY it (float (* -2 delta)))
+      (when (.overlaps (.getBoundingRectangle it) (.getBoundingRectangle bucket-sprite))
+        (swap! drop-sprites #(remove #{it} %))))
     (when (> (swap! drop-timer #(float (+ % delta))) 1)
       (reset! drop-timer (float 0))
-      (.add (:drop-sprites @resources) (create-droplet (:drop @resources))))))
+      (swap! drop-sprites #(conj % (create-droplet (:drop @resources))))))
+  (let [visible-drops (filter #(> (.getY %) (* (.getHeight %) -1)) @drop-sprites)]
+    (when (< (count visible-drops) (count @drop-sprites))
+      (reset! drop-sprites visible-drops))))
 
 (defn draw []
   (let [sprite-batch (:sprite-batch @resources)
@@ -58,7 +65,7 @@
     (.begin sprite-batch)
     (.draw sprite-batch (:background @resources) (float 0) (float 0) (.getWorldWidth viewport) (.getWorldHeight viewport))
     (.draw (:bucket-sprite @resources) sprite-batch)
-    (doseq [it (:drop-sprites @resources)]
+    (doseq [it @drop-sprites]
       (.draw it sprite-batch))
     (.end sprite-batch)))
 
@@ -74,8 +81,7 @@
                            :sound (.newSound Gdx/audio (.internal Gdx/files "resources/drop.mp3"))
                            :music (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
                            :sprite-batch (new SpriteBatch)
-                           :viewport (new FitViewport 8 5)
-                           :drop-sprites (new Array)})))
+                           :viewport (new FitViewport 8 5)})))
              (resize [width height]
                (Viewport/.update (:viewport @resources) width height true))
              (render []
