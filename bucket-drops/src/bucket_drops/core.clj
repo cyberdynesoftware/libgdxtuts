@@ -48,7 +48,8 @@
     (doseq [it @drop-sprites]
       (.translateY it (float (* -2 delta)))
       (when (.overlaps (.getBoundingRectangle it) (.getBoundingRectangle bucket-sprite))
-        (swap! drop-sprites #(remove #{it} %))))
+        (swap! drop-sprites #(remove #{it} %))
+        (.play (:sound @resources))))
     (when (> (swap! drop-timer #(float (+ % delta))) 1)
       (reset! drop-timer (float 0))
       (swap! drop-sprites #(conj % (create-droplet (:drop @resources))))))
@@ -79,9 +80,12 @@
                            :background (new Texture "resources/background.png")
                            :drop (new Texture "resources/drop.png")
                            :sound (.newSound Gdx/audio (.internal Gdx/files "resources/drop.mp3"))
-                           :music (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
                            :sprite-batch (new SpriteBatch)
-                           :viewport (new FitViewport 8 5)})))
+                           :viewport (new FitViewport 8 5)}))
+                (doto (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
+                  (.setLooping true)
+                  (.setVolume (float 0.5))
+                  (.play)))
              (resize [width height]
                (Viewport/.update (:viewport @resources) width height true))
              (render []
