@@ -1,6 +1,6 @@
 (ns bucket-drops.core
   (:import [com.badlogic.gdx.backends.lwjgl3 Lwjgl3Application Lwjgl3ApplicationConfiguration]
-           [com.badlogic.gdx ApplicationAdapter Gdx Files Audio Input$Keys]
+           [com.badlogic.gdx ApplicationAdapter Gdx Files Audio Input$Keys Input$Buttons]
            [com.badlogic.gdx.graphics Texture Color]
            [com.badlogic.gdx.graphics.g2d SpriteBatch Sprite]
            [com.badlogic.gdx.utils.viewport Viewport FitViewport]
@@ -31,7 +31,7 @@
     (when (.isKeyPressed Gdx/input Input$Keys/LEFT)
       (.translateX (:bucket-sprite @resources) (* speed delta -1))))
   (let [touch-pos (new Vector2)]
-    (when (.isTouched Gdx/input)
+    (when (.isButtonJustPressed Gdx/input Input$Buttons/RIGHT)
       (.set touch-pos (.getX Gdx/input) (.getY Gdx/input))
       (.unproject (:viewport @resources) touch-pos)
       (.setCenterX (:bucket-sprite @resources) (.x touch-pos)))))
@@ -41,6 +41,11 @@
     (.setSize (float 1) (float 1))
     (.setX (MathUtils/random (float 0) (float (- (.getWorldWidth (:viewport @resources)) 1))))
     (.setY (.getWorldHeight (:viewport @resources)))))
+
+(defn one-second-timer [delta]
+  (when (> (swap! drop-timer #(float (+ % delta))) 1)
+    (swap! drop-timer #(float (- % 1)))
+    true))
 
 (defn logic []
   (let [bucket-sprite (:bucket-sprite @resources)
@@ -54,8 +59,7 @@
       (when (.overlaps (.getBoundingRectangle it) (.getBoundingRectangle bucket-sprite))
         (swap! drop-sprites #(remove #{it} %))
         (.play (:sound @resources))))
-    (when (> (swap! drop-timer #(float (+ % delta))) 1)
-      (reset! drop-timer (float 0))
+    (when (one-second-timer delta)
       (swap! drop-sprites #(conj % (create-droplet (:drop @resources))))))
   (let [visible-drops (filter #(> (.getY %) (* (.getHeight %) -1)) @drop-sprites)]
     (when (< (count visible-drops) (count @drop-sprites))
