@@ -5,7 +5,9 @@
            [com.badlogic.gdx.graphics.g2d SpriteBatch Sprite]
            [com.badlogic.gdx.utils.viewport Viewport FitViewport]
            [com.badlogic.gdx.utils ScreenUtils Array]
-           [com.badlogic.gdx.math Vector2 MathUtils])
+           [com.badlogic.gdx.math Vector2 MathUtils]
+           [com.badlogic.gdx.assets AssetManager]
+           [com.badlogic.gdx.audio Sound Music])
   (:gen-class))
 
 (def config (doto (new Lwjgl3ApplicationConfiguration)
@@ -18,6 +20,8 @@
 (def drop-timer (atom (float 0)))
 
 (def drop-sprites (atom []))
+
+(def assets (new AssetManager))
 
 (defn input []
   (let [speed (float 0.25)
@@ -72,23 +76,30 @@
 
 (def mygame (proxy [ApplicationAdapter] []
               (create []
-                (let [bucket-texture (new Texture "resources/bucket.png")
-                      bucket-sprite (new Sprite bucket-texture)]
+                (doto assets
+                  (.load "resources/bucket.png" Texture)
+                  (.load "resources/background.png" Texture)
+                  (.load "resources/drop.png" Texture)
+                  (.load "resources/drop.mp3" Sound)
+                  (.load "resources/music.mp3" Music)
+                  (.finishLoading))
+                (let [bucket-sprite (new Sprite (.get assets "resources/bucket.png" Texture))]
                   (.setSize bucket-sprite 1 1)
                   (reset! resources
                           {:bucket-sprite bucket-sprite
-                           :background (new Texture "resources/background.png")
-                           :drop (new Texture "resources/drop.png")
-                           :sound (.newSound Gdx/audio (.internal Gdx/files "resources/drop.mp3"))
+                           :background (.get assets "resources/background.png" Texture)
+                           :drop (.get assets "resources/drop.png" Texture)
+                           :sound (.get assets "resources/drop.mp3" Sound)
                            :sprite-batch (new SpriteBatch)
                            :viewport (new FitViewport 8 5)}))
-                (doto (.newMusic Gdx/audio (.internal Gdx/files "resources/music.mp3"))
+                (doto (.get assets "resources/music.mp3" Music)
                   (.setLooping true)
                   (.setVolume (float 0.5))
                   (.play)))
              (resize [width height]
                (Viewport/.update (:viewport @resources) width height true))
              (render []
+               (.update assets)
                (input)
                (logic)
                (draw))))
