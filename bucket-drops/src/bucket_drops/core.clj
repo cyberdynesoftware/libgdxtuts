@@ -23,18 +23,31 @@
 
 (def assets (new AssetManager))
 
-(defn input []
+(defn load-assets
+  []
+  (doto assets
+    (.load "resources/bucket.png" Texture)
+    (.load "resources/background.png" Texture)
+    (.load "resources/drop.png" Texture)
+    (.load "resources/drop.mp3" Sound)
+    (.load "resources/music.mp3" Music)
+    (.finishLoading)))
+
+(defn move-bucket
+  [direction]
   (let [speed (float 0.25)
         delta (.getDeltaTime Gdx/graphics)]
-    (when (.isKeyPressed Gdx/input Input$Keys/RIGHT)
-      (.translateX (:bucket-sprite @resources) (* speed delta)))
-    (when (.isKeyPressed Gdx/input Input$Keys/LEFT)
-      (.translateX (:bucket-sprite @resources) (* speed delta -1))))
-  (let [touch-pos (new Vector2)]
-    (when (.isButtonJustPressed Gdx/input Input$Buttons/RIGHT)
-      (.set touch-pos (.getX Gdx/input) (.getY Gdx/input))
-      (.unproject (:viewport @resources) touch-pos)
-      (.setCenterX (:bucket-sprite @resources) (.x touch-pos)))))
+    (.translateX (:bucket-sprite @resources) (* speed delta direction))))
+
+(defn input []
+  (when (.isKeyPressed Gdx/input Input$Keys/RIGHT)
+    (move-bucket 1))
+  (when (.isKeyPressed Gdx/input Input$Keys/LEFT)
+    (move-bucket -1))
+  (when (.isButtonJustPressed Gdx/input Input$Buttons/RIGHT)
+    (let [pos (new Vector2 (.getX Gdx/input) (.getY Gdx/input))]
+      (.unproject (:viewport @resources) pos)
+      (.setCenterX (:bucket-sprite @resources) (.x pos)))))
 
 (defn create-droplet [texture]
   (doto (new Sprite texture)
@@ -42,30 +55,39 @@
     (.setX (MathUtils/random (float 0) (float (- (.getWorldWidth (:viewport @resources)) 1))))
     (.setY (.getWorldHeight (:viewport @resources)))))
 
-(defn one-second-timer [delta]
+(defn one-second-passed
+  [delta]
   (when (> (swap! drop-timer #(float (+ % delta))) 1)
     (swap! drop-timer #(float (- % 1)))
     true))
 
-(defn logic []
+(defn update-drops
+  []
+  (let [bucket-sprite (:bucket-sprite @resources)
+        delta (.getDeltaTime Gdx/graphics)]
+    (doseq [it @drop-sprites]
+      (.translateY it (float (* -2 delta)))
+      (when (.overlaps (.getBoundingRectangle it) (.getBoundingRectangle bucket-sprite))
+        (swap! drop-sprites #(remove #{it} %))
+        (.play (:sound @resources)))))
+  (let [visible-drops (filter #(> (.getY %) (* (.getHeight %) -1)) @drop-sprites)]
+    (when (< (count visible-drops) (count @drop-sprites))
+      (reset! drop-sprites visible-drops))))
+
+(defn logic
+  []
   (let [bucket-sprite (:bucket-sprite @resources)
         viewport (:viewport @resources)
         delta (.getDeltaTime Gdx/graphics)]
     (.setX bucket-sprite (MathUtils/clamp (.getX bucket-sprite)
                                           (float 0)
                                           (float (- (.getWorldWidth viewport) (.getWidth bucket-sprite)))))
-    (doseq [it @drop-sprites]
-      (.translateY it (float (* -2 delta)))
-      (when (.overlaps (.getBoundingRectangle it) (.getBoundingRectangle bucket-sprite))
-        (swap! drop-sprites #(remove #{it} %))
-        (.play (:sound @resources))))
-    (when (one-second-timer delta)
-      (swap! drop-sprites #(conj % (create-droplet (:drop @resources))))))
-  (let [visible-drops (filter #(> (.getY %) (* (.getHeight %) -1)) @drop-sprites)]
-    (when (< (count visible-drops) (count @drop-sprites))
-      (reset! drop-sprites visible-drops))))
+    (update-drops)
+    (when (one-second-passed delta)
+      (swap! drop-sprites #(conj % (create-droplet (:drop @resources)))))))
 
-(defn draw []
+(defn draw
+  []
   (let [sprite-batch (:sprite-batch @resources)
         viewport (:viewport @resources)]
     (ScreenUtils/clear Color/BLACK)
@@ -80,13 +102,7 @@
 
 (def mygame (proxy [ApplicationAdapter] []
               (create []
-                (doto assets
-                  (.load "resources/bucket.png" Texture)
-                  (.load "resources/background.png" Texture)
-                  (.load "resources/drop.png" Texture)
-                  (.load "resources/drop.mp3" Sound)
-                  (.load "resources/music.mp3" Music)
-                  (.finishLoading))
+                (load-assets)
                 (let [bucket-sprite (new Sprite (.get assets "resources/bucket.png" Texture))]
                   (.setSize bucket-sprite 1 1)
                   (reset! resources
