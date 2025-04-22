@@ -8,7 +8,7 @@
               (.setWindowedMode 800 500)))
 
 (defn -main
-  "A extended game tutorial for libgdx"
+  "An extended game tutorial for libgdx"
   [& args]
   (new Lwjgl3Application game/mygame config)
   (println "Bye~"))
