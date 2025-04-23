@@ -17,5 +17,5 @@
                                                                            (.getHeight Gdx/graphics))))))))
                 (.setScreen this (menu/screen)))
               (dispose []
-                (.dispose (@globals/sprite-batch))
-                (.dispose (@globals/font)))))
+                (.dispose @globals/sprite-batch)
+                (.dispose @globals/font))))
