@@ -14,7 +14,9 @@
       (let [matrix (.. @globals/viewport getCamera combined)]
         (.setProjectionMatrix @globals/sprite-batch matrix))
       (.begin @globals/sprite-batch)
-      (.draw @globals/font @globals/sprite-batch "test" (float 1) (float 1))
+      (.draw @globals/font @globals/sprite-batch "Drops" (float 1) (float 4))
+      (when (.update globals/assets)
+        (.draw @globals/font @globals/sprite-batch "Click to play" (float 1) (float 3)))
       (.end @globals/sprite-batch))
     (resize [x y]
       (.update @globals/viewport x y true))))

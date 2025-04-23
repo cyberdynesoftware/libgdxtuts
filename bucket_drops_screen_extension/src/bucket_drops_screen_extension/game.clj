@@ -15,6 +15,7 @@
                                          (.setUseIntegerPositions false)
                                          (.. (getData) (setScale (float (/ (.getWorldHeight viewport)
                                                                            (.getHeight Gdx/graphics))))))))
+                (globals/load-assets)
                 (.setScreen this (menu/screen)))
               (dispose []
                 (.dispose @globals/sprite-batch)
