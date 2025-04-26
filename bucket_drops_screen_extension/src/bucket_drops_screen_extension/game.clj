@@ -29,4 +29,5 @@
                 (proxy-super render))
               (dispose []
                 (.dispose @globals/sprite-batch)
-                (.dispose @globals/font))))
+                (.dispose @globals/font)
+                (.dispose globals/assets))))

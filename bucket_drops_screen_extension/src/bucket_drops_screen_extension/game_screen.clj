@@ -13,10 +13,11 @@
 (def drop-timer (atom (float 0)))
 (def drop-sprites (atom []))
 (def bucket-sprite (atom nil))
+(def drops-gathered (atom 0))
 
 (defn move-bucket
   [direction]
-  (let [speed (float 0.25)
+  (let [speed (float 4)
         delta (.getDeltaTime Gdx/graphics)]
     (.translateX @bucket-sprite (* speed delta direction))))
 
@@ -48,7 +49,8 @@
     (.translateY it (float (* -2 delta)))
     (when (.overlaps (.getBoundingRectangle it) (.getBoundingRectangle @bucket-sprite))
       (swap! drop-sprites #(remove #{it} %))
-      (.play (.get globals/assets "resources/drop.mp3" Sound))))
+      (.play (.get globals/assets "resources/drop.mp3" Sound))
+      (swap! drops-gathered inc)))
   (let [visible-drops (filter #(> (.getY %) (* (.getHeight %) -1)) @drop-sprites)]
     (when (< (count visible-drops) (count @drop-sprites))
       (reset! drop-sprites visible-drops))))
@@ -78,6 +80,7 @@
   (.draw @bucket-sprite @globals/sprite-batch)
   (doseq [it @drop-sprites]
     (.draw it @globals/sprite-batch))
+  (.draw @globals/font @globals/sprite-batch (str "Drops collected: " @drops-gathered) (float 0) (.getWorldHeight @globals/viewport))
   (.end @globals/sprite-batch))
 
 (defn mygame
