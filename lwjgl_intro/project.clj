@@ -6,6 +6,8 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.lwjgl/lwjgl "3.3.6"]
                  [org.lwjgl/lwjgl "3.3.6" :classifier "natives-linux"]
+                 [org.lwjgl/lwjgl-opengl "3.3.6"]
+                 [org.lwjgl/lwjgl-opengl "3.3.6" :classifier "natives-linux"]
                  [org.lwjgl/lwjgl-glfw "3.3.6"]
                  [org.lwjgl/lwjgl-glfw "3.3.6" :classifier "natives-linux"]]
   :main ^:skip-aot lwjgl-intro.core
