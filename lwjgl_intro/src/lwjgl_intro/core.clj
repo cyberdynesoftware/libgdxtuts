@@ -4,7 +4,7 @@
            [org.lwjgl.system MemoryUtil])
   (:gen-class))
 
-(def cb (proxy [GLFWKeyCallbackI] []
+(def cb (proxy [java.lang.Object GLFWKeyCallbackI] []
           (invoke [window keycode _ action _]
             (when (and (= keycode GLFW/GLFW_KEY_ESCAPE)
                        (= action GLFW/GLFW_PRESS))
@@ -25,8 +25,12 @@
     ;(GLFW/glfwSetKeyCallback window cb) 
 
     (while (not (GLFW/glfwWindowShouldClose window))
+      (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
+              (GLFW/glfwSetWindowShouldClose window true))
+
       (GL33/glClear GL33/GL_COLOR_BUFFER_BIT)
       (GLFW/glfwSwapBuffers window)
       (GLFW/glfwPollEvents)))
 
+  (GLFW/glfwTerminate)
   (println "So long..."))
