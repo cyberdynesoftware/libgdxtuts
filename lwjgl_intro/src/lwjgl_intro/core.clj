@@ -4,8 +4,8 @@
            [org.lwjgl.system MemoryUtil])
   (:gen-class))
 
-(def cb (proxy [java.lang.Object GLFWKeyCallbackI] []
-          (invoke [window keycode _ action _]
+(def cb (reify GLFWKeyCallbackI
+          (invoke [_ window keycode _ action _]
             (when (and (= keycode GLFW/GLFW_KEY_ESCAPE)
                        (= action GLFW/GLFW_PRESS))
               (GLFW/glfwSetWindowShouldClose window true)))))
