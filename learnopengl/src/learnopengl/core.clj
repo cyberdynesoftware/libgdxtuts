@@ -1,4 +1,5 @@
 (ns learnopengl.core
+  (:require [learnopengl.triangle :as triangle])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil])
@@ -16,6 +17,8 @@
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
     (GL33/glClearColor (float 0.2) (float 0.3) (float 0.3) (float 0))
+
+    (triangle/activate-shader-program)
 
     (while (not (GLFW/glfwWindowShouldClose window))
       (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
