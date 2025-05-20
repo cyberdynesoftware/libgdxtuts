@@ -72,11 +72,13 @@
   [0 1 3
    1 2 3])
 
-(def two-triangle-vertices
+(def first-triangle-vertices
   [-0.9 -0.5 0
    0 -0.5 0
-   -0.45 0.5 0
-   0 -0.5 0
+   -0.45 0.5 0])
+
+(def second-triangle-vertices
+  [0 -0.5 0
    0.9 -0.5 0
    0.45 0.5 0])
 
@@ -87,14 +89,14 @@
     (.flip)))
 
 (defn create-vertex-array
-  []
+  [vertices]
   (let [vbo (GL33/glGenBuffers)
         vao (GL33/glGenVertexArrays)
         ebo (GL33/glGenBuffers)]
     (GL33/glBindVertexArray vao)
 
     (GL33/glBindBuffer GL33/GL_ARRAY_BUFFER vbo)
-    (GL33/glBufferData GL33/GL_ARRAY_BUFFER (create-float-buffer two-triangle-vertices) GL33/GL_STATIC_DRAW)
+    (GL33/glBufferData GL33/GL_ARRAY_BUFFER (create-float-buffer vertices) GL33/GL_STATIC_DRAW)
 
     ;(GL33/glBindBuffer GL33/GL_ELEMENT_ARRAY_BUFFER ebo)
     ;(GL33/glBufferData GL33/GL_ELEMENT_ARRAY_BUFFER (create-int-buffer indices) GL33/GL_STATIC_DRAW)

@@ -18,7 +18,8 @@
     (GL/createCapabilities)
 
     (let [shader-program (triangle/get-shader-program)
-          vao (triangle/create-vertex-array)]
+          first-triangle (triangle/create-vertex-array triangle/first-triangle-vertices)
+          second-triangle (triangle/create-vertex-array triangle/second-triangle-vertices)]
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
@@ -30,8 +31,10 @@
         ;(GL33/glPolygonMode GL33/GL_FRONT_AND_BACK GL33/GL_LINE)
 
         (GL33/glUseProgram shader-program)
-        (GL33/glBindVertexArray vao)
-        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 6)
+        (GL33/glBindVertexArray first-triangle)
+        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
+        (GL33/glBindVertexArray second-triangle)
+        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
         ;(GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
 
         (GLFW/glfwSwapBuffers window)
