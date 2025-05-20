@@ -17,7 +17,8 @@
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
 
-    (let [shader-program (triangle/get-shader-program)
+    (let [shader-program (triangle/get-shader-program triangle/fragment-shader-source)
+          shader-program-yellow (triangle/get-shader-program triangle/fragment-shader-source-yellow)
           first-triangle (triangle/create-vertex-array triangle/first-triangle-vertices)
           second-triangle (triangle/create-vertex-array triangle/second-triangle-vertices)]
 
@@ -33,6 +34,7 @@
         (GL33/glUseProgram shader-program)
         (GL33/glBindVertexArray first-triangle)
         (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
+        (GL33/glUseProgram shader-program-yellow)
         (GL33/glBindVertexArray second-triangle)
         (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
         ;(GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)

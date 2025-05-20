@@ -42,6 +42,15 @@
   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
   }")
 
+(def fragment-shader-source-yellow
+  "#version 330 core
+  out vec4 FragColor;
+
+  void main()
+  {
+  FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+  }")
+
 (defn create-shader-program
   [& shader]
   (let [program (GL33/glCreateProgram)]
@@ -54,7 +63,7 @@
     program))
 
 (defn get-shader-program
-  []
+  [fragment-shader-source]
   (let [vertex-shader (create-shader GL33/GL_VERTEX_SHADER vertex-shader-source)
         fragment-shader (create-shader GL33/GL_FRAGMENT_SHADER fragment-shader-source)
         shader-program (create-shader-program vertex-shader fragment-shader)]
