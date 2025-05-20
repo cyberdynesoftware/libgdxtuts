@@ -27,9 +27,12 @@
         (GL33/glClearColor (float 0.2) (float 0.3) (float 0.3) (float 1))
         (GL33/glClear GL33/GL_COLOR_BUFFER_BIT)
         
+        (GL33/glPolygonMode GL33/GL_FRONT_AND_BACK GL33/GL_LINE)
+
         (GL33/glUseProgram shader-program)
         (GL33/glBindVertexArray vao)
-        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
+        ;(GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
+        (GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
 
         (GLFW/glfwSwapBuffers window)
         (GLFW/glfwPollEvents))))

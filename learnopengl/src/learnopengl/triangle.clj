@@ -2,22 +2,16 @@
   (:import [org.lwjgl.opengl GL33]
            [org.lwjgl BufferUtils]))
 
-(def vertices [
+(def triangle-vertices [
   -0.5 -0.5 0
   0.5 -0.5 0
   0 0.5 0])
 
-(def vertex-buffer
+(defn create-float-buffer
+  [vertices]
   (doto (BufferUtils/createFloatBuffer (count vertices))
     (.put (float-array vertices))
     (.flip)))
-
-(defn create-vbo
-  []
-  (let [vbo (GL33/glGenBuffers)]
-    (GL33/glBindBuffer GL33/GL_ARRAY_BUFFER vbo)
-    (GL33/glBufferData GL33/GL_ARRAY_BUFFER vertex-buffer GL33/GL_STATIC_DRAW)
-    vbo))
 
 (def vertex-shader-source
   "#version 330 core
@@ -68,13 +62,35 @@
     (GL33/glDeleteShader fragment-shader)
     shader-program))
 
+(def rectangle-vertices 
+  [0.5 0.5 0
+   0.5 -0.5 0
+   -0.5 -0.5 0
+   -0.5 0.5 0])
+
+(def indices
+  [0 1 3
+   1 2 3])
+
+(defn create-int-buffer
+  [indices]
+  (doto (BufferUtils/createIntBuffer (count indices))
+    (.put (int-array indices))
+    (.flip)))
+
 (defn create-vertex-array
   []
   (let [vbo (GL33/glGenBuffers)
-        vao (GL33/glGenVertexArrays)]
+        vao (GL33/glGenVertexArrays)
+        ebo (GL33/glGenBuffers)]
     (GL33/glBindVertexArray vao)
+
     (GL33/glBindBuffer GL33/GL_ARRAY_BUFFER vbo)
-    (GL33/glBufferData GL33/GL_ARRAY_BUFFER vertex-buffer GL33/GL_STATIC_DRAW)
+    (GL33/glBufferData GL33/GL_ARRAY_BUFFER (create-float-buffer rectangle-vertices) GL33/GL_STATIC_DRAW)
+
+    (GL33/glBindBuffer GL33/GL_ELEMENT_ARRAY_BUFFER ebo)
+    (GL33/glBufferData GL33/GL_ELEMENT_ARRAY_BUFFER (create-int-buffer indices) GL33/GL_STATIC_DRAW)
+
     (GL33/glVertexAttribPointer 0 3 GL33/GL_FLOAT false 0 0)
     (GL33/glEnableVertexAttribArray 0)
     vao))
