@@ -34,10 +34,8 @@
 
         (GL33/glUseProgram shader-program)
 
-        (let [delta (GLFW/glfwGetTime)
-              green-tint (+ (/ (Math/sin delta) 2) 0.5)
-              vertex-color-location (GL33/glGetUniformLocation shader-program "ourColor")]
-          (GL33/glUniform4f vertex-color-location (float 0) (float green-tint) (float 0) (float 1)))
+        (let [offset-location (GL33/glGetUniformLocation shader-program "offset")]
+          (GL33/glUniform1f offset-location (float 0.5)))
 
         (GL33/glBindVertexArray triangle)
         (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
