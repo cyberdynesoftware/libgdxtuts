@@ -1,5 +1,6 @@
 (ns learnopengl.core
-  (:require [learnopengl.triangle :as triangle])
+  (:require [learnopengl.triangle :as triangle]
+            [learnopengl.shader :as shader])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil])
@@ -17,10 +18,10 @@
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
 
-    (let [shader-program (triangle/get-shader-program triangle/fragment-shader-source)
-          shader-program-yellow (triangle/get-shader-program triangle/fragment-shader-source-yellow)
-          first-triangle (triangle/create-vertex-array triangle/first-triangle-vertices)
-          second-triangle (triangle/create-vertex-array triangle/second-triangle-vertices)]
+    (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
+          fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
+          shader-program (shader/get-shader-program vertex-shader-source fragment-shader-source)
+          triangle (triangle/create-vertex-array triangle/triangle-vertices)]
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
@@ -32,10 +33,7 @@
         ;(GL33/glPolygonMode GL33/GL_FRONT_AND_BACK GL33/GL_LINE)
 
         (GL33/glUseProgram shader-program)
-        (GL33/glBindVertexArray first-triangle)
-        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
-        (GL33/glUseProgram shader-program-yellow)
-        (GL33/glBindVertexArray second-triangle)
+        (GL33/glBindVertexArray triangle)
         (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
         ;(GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
 
