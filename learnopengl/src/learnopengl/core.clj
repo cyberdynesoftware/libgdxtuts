@@ -21,7 +21,7 @@
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
           shader-program (shader/get-shader-program vertex-shader-source fragment-shader-source)
-          triangle (triangle/create-vertex-array triangle/triangle-vertices)]
+          triangle (triangle/create-vertex-array triangle/triangle-vertices-with-color)]
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
