@@ -8,6 +8,8 @@
                  [org.lwjgl/lwjgl "3.3.6" :classifier "natives-linux"]
                  [org.lwjgl/lwjgl-opengl "3.3.6"]
                  [org.lwjgl/lwjgl-opengl "3.3.6" :classifier "natives-linux"]
+                 [org.lwjgl/lwjgl-stb "3.3.6"]
+                 [org.lwjgl/lwjgl-stb "3.3.6" :classifier "natives-linux"]
                  [org.lwjgl/lwjgl-glfw "3.3.6"]
                  [org.lwjgl/lwjgl-glfw "3.3.6" :classifier "natives-linux"]]
   :main ^:skip-aot learnopengl.core

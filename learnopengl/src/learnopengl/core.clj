@@ -1,6 +1,7 @@
 (ns learnopengl.core
   (:require [learnopengl.triangle :as triangle]
-            [learnopengl.shader :as shader])
+            [learnopengl.shader :as shader]
+            [learnopengl.texture :as texture])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil])
@@ -18,10 +19,12 @@
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
 
+    (texture/load-texture "resources/textures/wall.jpg")
+
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
           shader-program (shader/get-shader-program vertex-shader-source fragment-shader-source)
-          triangle (triangle/create-vertex-array triangle/triangle-vertices-with-color)]
+          rectangle (texture/create-vertex-array texture/vertices)]
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
@@ -34,12 +37,12 @@
 
         (GL33/glUseProgram shader-program)
 
-        (let [offset-location (GL33/glGetUniformLocation shader-program "offset")]
-          (GL33/glUniform1f offset-location (float 0.5)))
+        ;(let [offset-location (GL33/glGetUniformLocation shader-program "offset")]
+        ;  (GL33/glUniform1f offset-location (float 0.5)))
 
-        (GL33/glBindVertexArray triangle)
-        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
-        ;(GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
+        (GL33/glBindVertexArray rectangle)
+        ;(GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
+        (GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
 
         (GLFW/glfwSwapBuffers window)
         (GLFW/glfwPollEvents))))
