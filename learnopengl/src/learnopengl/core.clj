@@ -7,6 +7,8 @@
            [org.lwjgl.system MemoryUtil])
   (:gen-class))
 
+(def mix-param (atom 0.5))
+
 (defn -main
   "learnopengl hello window"
   [& args]
@@ -32,6 +34,12 @@
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
           (GLFW/glfwSetWindowShouldClose window true))
+        (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_UP) GLFW/GLFW_PRESS)
+          (swap! mix-param (fn [current args] (if (< current 1.0) (+ current args) 1.0)) 0.005))
+        (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_DOWN) GLFW/GLFW_PRESS)
+          (swap! mix-param (fn [current args] (if (> current 0.0) (- current args) 0.0)) 0.005))
+
+        (GL33/glUniform1f (GL33/glGetUniformLocation shader-program "mix_param") (float @mix-param))
 
         (GL33/glClearColor (float 0.2) (float 0.3) (float 0.3) (float 1))
         (GL33/glClear GL33/GL_COLOR_BUFFER_BIT)
