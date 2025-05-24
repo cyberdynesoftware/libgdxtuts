@@ -17,6 +17,20 @@
     (STBImage/stbi_image_free image)
     texture))
 
+(defn load-texture-with-alpha
+  [path]
+  (STBImage/stbi_set_flip_vertically_on_load true)
+  (let [width (BufferUtils/createIntBuffer 1)
+        height (BufferUtils/createIntBuffer 1)
+        channels (BufferUtils/createIntBuffer 1)
+        image (STBImage/stbi_load path width height channels 0)
+        texture (GL33/glGenTextures)]
+    (GL33/glBindTexture GL33/GL_TEXTURE_2D texture)
+    (GL33/glTexImage2D GL33/GL_TEXTURE_2D 0 GL33/GL_RGB (.get width) (.get height) 0 GL33/GL_RGBA GL33/GL_UNSIGNED_BYTE image)
+    (GL33/glGenerateMipmap GL33/GL_TEXTURE_2D)
+    (STBImage/stbi_image_free image)
+    texture))
+
 (def vertices
   ; // positions          // colors           // texture coords
   [
