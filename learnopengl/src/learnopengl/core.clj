@@ -1,7 +1,8 @@
 (ns learnopengl.core
   (:require [learnopengl.triangle :as triangle]
             [learnopengl.shader :as shader]
-            [learnopengl.texture :as texture])
+            [learnopengl.texture :as texture]
+            [learnopengl.transformations :as trans])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil])
@@ -20,6 +21,8 @@
   (let [window (GLFW/glfwCreateWindow (int 400) (int 300) "learnopengl" MemoryUtil/NULL MemoryUtil/NULL)]
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
+
+    (trans/first-steps)
 
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
