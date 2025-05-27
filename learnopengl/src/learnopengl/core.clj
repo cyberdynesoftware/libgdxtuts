@@ -22,8 +22,6 @@
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
 
-    (trans/first-steps)
-
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
           shader-program (shader/get-shader-program vertex-shader-source fragment-shader-source)
@@ -33,6 +31,7 @@
       (GL33/glUseProgram shader-program)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "ourTexture") 0)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "otherTexture") 1)
+      (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/scale-n-rotate))
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
