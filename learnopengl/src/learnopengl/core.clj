@@ -6,6 +6,7 @@
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil]
+           [org.lwjgl.system MemoryStack]
            [org.joml Matrix4f])
   (:gen-class))
 
@@ -51,6 +52,7 @@
 
         (GL33/glUseProgram shader-program)
         (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/translate-n-rotate mat4 (GLFW/glfwGetTime)))
+        (MemoryStack/stackPop)
 
         ;(let [offset-location (GL33/glGetUniformLocation shader-program "offset")]
         ;  (GL33/glUniform1f offset-location (float 0.5)))
