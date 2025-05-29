@@ -18,6 +18,13 @@
 
 (defn translate-n-rotate
   [mat4 angle]
-  (.rotation mat4 (float angle) (new Vector3f (float 0) (float 0) (float 1)))
-  (.translate mat4 (new Vector3f (float 0.5) (float -0.5) (float 0)))
+  (.translation mat4 (new Vector3f (float 0.5) (float -0.5) (float 0)))
+  (.rotate mat4 (float angle) (new Vector3f (float 0) (float 0) (float 1)))
+  (.get mat4 (.mallocFloat (MemoryStack/stackPush) 16)))
+
+(defn translate-n-scale
+  [mat4 angle]
+  (.translation mat4 (new Vector3f (float -0.5) (float 0.5) (float 0)))
+  (let [scale (Math/sin angle)]
+    (.scale mat4 (new Vector3f scale scale (float 1))))
   (.get mat4 (.mallocFloat (MemoryStack/stackPush) 16)))

@@ -51,19 +51,21 @@
         ;(GL33/glPolygonMode GL33/GL_FRONT_AND_BACK GL33/GL_LINE)
 
         (GL33/glUseProgram shader-program)
-        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/translate-n-rotate mat4 (GLFW/glfwGetTime)))
-        (MemoryStack/stackPop)
-
-        ;(let [offset-location (GL33/glGetUniformLocation shader-program "offset")]
-        ;  (GL33/glUniform1f offset-location (float 0.5)))
-
         (GL33/glActiveTexture GL33/GL_TEXTURE0)
         (GL33/glBindTexture GL33/GL_TEXTURE_2D wall)
         (GL33/glActiveTexture GL33/GL_TEXTURE1)
         (GL33/glBindTexture GL33/GL_TEXTURE_2D smiley)
 
+        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/translate-n-rotate mat4 (GLFW/glfwGetTime)))
+        (MemoryStack/stackPop)
+
         (GL33/glBindVertexArray rectangle)
         ;(GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
+        (GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
+
+        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/translate-n-scale mat4 (GLFW/glfwGetTime)))
+        (MemoryStack/stackPop)
+
         (GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
 
         (GLFW/glfwSwapBuffers window)
