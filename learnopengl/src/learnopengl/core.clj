@@ -5,7 +5,8 @@
             [learnopengl.transformations :as trans])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
-           [org.lwjgl.system MemoryUtil])
+           [org.lwjgl.system MemoryUtil]
+           [org.joml Matrix4f])
   (:gen-class))
 
 (def mix-param (atom 0.5))
@@ -27,11 +28,11 @@
           shader-program (shader/get-shader-program vertex-shader-source fragment-shader-source)
           wall (texture/load-texture "resources/textures/wall.jpg")
           smiley (texture/load-texture-with-alpha "resources/textures/awesomeface.png")
-          rectangle (texture/create-vertex-array texture/vertices)]
+          rectangle (texture/create-vertex-array texture/vertices)
+          mat4 (new Matrix4f)]
       (GL33/glUseProgram shader-program)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "ourTexture") 0)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "otherTexture") 1)
-      (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/scale-n-rotate))
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
@@ -49,6 +50,7 @@
         ;(GL33/glPolygonMode GL33/GL_FRONT_AND_BACK GL33/GL_LINE)
 
         (GL33/glUseProgram shader-program)
+        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/translate-n-rotate mat4 (GLFW/glfwGetTime)))
 
         ;(let [offset-location (GL33/glGetUniformLocation shader-program "offset")]
         ;  (GL33/glUniform1f offset-location (float 0.5)))
