@@ -24,20 +24,31 @@
   (let [window (GLFW/glfwCreateWindow (int 400) (int 300) "learnopengl" MemoryUtil/NULL MemoryUtil/NULL)]
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
+    (GL33/glEnable GL33/GL_DEPTH_TEST)
 
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
           shader-program (shader/get-shader-program vertex-shader-source fragment-shader-source)
           wall (texture/load-texture "resources/textures/wall.jpg")
           smiley (texture/load-texture-with-alpha "resources/textures/awesomeface.png")
-          rectangle (texture/create-vertex-array texture/vertices)
-          mat4 (new Matrix4f)
+          cube (coordsys/create-vertex-array coordsys/vertices)
           projection (coordsys/perspective (new Matrix4f))
-          view (coordsys/view (new Matrix4f))
-          model (coordsys/rotate-model (new Matrix4f))]
+          view (coordsys/view (new Matrix4f))]
       (GL33/glUseProgram shader-program)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "ourTexture") 0)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "otherTexture") 1)
+
+      (with-open [stack (MemoryStack/stackPush)]
+        (GL33/glUniformMatrix4fv
+          (GL33/glGetUniformLocation shader-program "projection")
+          false
+          (.get projection (.mallocFloat stack 16))))
+
+      (with-open [stack (MemoryStack/stackPush)]
+        (GL33/glUniformMatrix4fv
+          (GL33/glGetUniformLocation shader-program "view")
+          false
+          (.get view (.mallocFloat stack 16))))
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
@@ -50,33 +61,23 @@
         (GL33/glUniform1f (GL33/glGetUniformLocation shader-program "mix_param") (float @mix-param))
 
         (GL33/glClearColor (float 0.2) (float 0.3) (float 0.3) (float 1))
-        (GL33/glClear GL33/GL_COLOR_BUFFER_BIT)
-        
-        ;(GL33/glPolygonMode GL33/GL_FRONT_AND_BACK GL33/GL_LINE)
+        (GL33/glClear (bit-or GL33/GL_COLOR_BUFFER_BIT GL33/GL_DEPTH_BUFFER_BIT))
 
-        (GL33/glUseProgram shader-program)
         (GL33/glActiveTexture GL33/GL_TEXTURE0)
         (GL33/glBindTexture GL33/GL_TEXTURE_2D wall)
         (GL33/glActiveTexture GL33/GL_TEXTURE1)
         (GL33/glBindTexture GL33/GL_TEXTURE_2D smiley)
+        (GL33/glUseProgram shader-program)
 
-        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "projection") false (.get projection (.mallocFloat (MemoryStack/stackPush) 16)))
-        (MemoryStack/stackPop)
+        (let [model (coordsys/rotate-model-2 (new Matrix4f) (GLFW/glfwGetTime))]
+          (with-open [stack (MemoryStack/stackPush)]
+            (GL33/glUniformMatrix4fv
+              (GL33/glGetUniformLocation shader-program "model")
+              false
+              (.get model (.mallocFloat stack 16)))))
 
-        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "view") false (.get view (.mallocFloat (MemoryStack/stackPush) 16)))
-        (MemoryStack/stackPop)
-
-        (GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (.get model (.mallocFloat (MemoryStack/stackPush) 16)))
-        (MemoryStack/stackPop)
-
-        (GL33/glBindVertexArray rectangle)
-        ;(GL33/glDrawArrays GL33/GL_TRIANGLES 0 3)
-        (GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
-
-        ;(GL33/glUniformMatrix4fv (GL33/glGetUniformLocation shader-program "transform") false (trans/translate-n-scale mat4 (GLFW/glfwGetTime)))
-        ;(MemoryStack/stackPop)
-
-        ;(GL33/glDrawElements GL33/GL_TRIANGLES 6 GL33/GL_UNSIGNED_INT 0)
+        (GL33/glBindVertexArray cube)
+        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36)
 
         (GLFW/glfwSwapBuffers window)
         (GLFW/glfwPollEvents))))

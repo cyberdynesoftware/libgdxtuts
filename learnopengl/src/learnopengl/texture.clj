@@ -6,19 +6,24 @@
 
 (defn load-texture
   [path]
+  (STBImage/stbi_set_flip_vertically_on_load true)
   (let [width (BufferUtils/createIntBuffer 1)
         height (BufferUtils/createIntBuffer 1)
         channels (BufferUtils/createIntBuffer 1)
-        image (STBImage/stbi_load path width height channels 0)
+        image-data (STBImage/stbi_load path width height channels 0)
         texture (GL33/glGenTextures)]
     (GL33/glBindTexture GL33/GL_TEXTURE_2D texture)
-    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_WRAP_S GL33/GL_CLAMP_TO_EDGE)
-    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_WRAP_T GL33/GL_CLAMP_TO_EDGE)
-    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MIN_FILTER GL33/GL_NEAREST)
-    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MAG_FILTER GL33/GL_NEAREST)
-    (GL33/glTexImage2D GL33/GL_TEXTURE_2D 0 GL33/GL_RGB (.get width) (.get height) 0 GL33/GL_RGB GL33/GL_UNSIGNED_BYTE image)
+
+    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_WRAP_S GL33/GL_REPEAT)
+    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_WRAP_T GL33/GL_REPEAT)
+
+    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MIN_FILTER GL33/GL_LINEAR)
+    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MAG_FILTER GL33/GL_LINEAR)
+
+    (GL33/glTexImage2D GL33/GL_TEXTURE_2D 0 GL33/GL_RGB (.get width) (.get height) 0 GL33/GL_RGB GL33/GL_UNSIGNED_BYTE image-data)
     (GL33/glGenerateMipmap GL33/GL_TEXTURE_2D)
-    (STBImage/stbi_image_free image)
+
+    (STBImage/stbi_image_free image-data)
     texture))
 
 (defn load-texture-with-alpha
@@ -27,16 +32,20 @@
   (let [width (BufferUtils/createIntBuffer 1)
         height (BufferUtils/createIntBuffer 1)
         channels (BufferUtils/createIntBuffer 1)
-        image (STBImage/stbi_load path width height channels 0)
+        image-data (STBImage/stbi_load path width height channels 0)
         texture (GL33/glGenTextures)]
     (GL33/glBindTexture GL33/GL_TEXTURE_2D texture)
+
     (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_WRAP_S GL33/GL_REPEAT)
     (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_WRAP_T GL33/GL_REPEAT)
-    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MIN_FILTER GL33/GL_NEAREST)
-    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MAG_FILTER GL33/GL_NEAREST)
-    (GL33/glTexImage2D GL33/GL_TEXTURE_2D 0 GL33/GL_RGB (.get width) (.get height) 0 GL33/GL_RGBA GL33/GL_UNSIGNED_BYTE image)
+
+    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MIN_FILTER GL33/GL_LINEAR)
+    (GL33/glTexParameteri GL33/GL_TEXTURE_2D GL33/GL_TEXTURE_MAG_FILTER GL33/GL_LINEAR)
+
+    (GL33/glTexImage2D GL33/GL_TEXTURE_2D 0 GL33/GL_RGB (.get width) (.get height) 0 GL33/GL_RGBA GL33/GL_UNSIGNED_BYTE image-data)
     (GL33/glGenerateMipmap GL33/GL_TEXTURE_2D)
-    (STBImage/stbi_image_free image)
+
+    (STBImage/stbi_image_free image-data)
     texture))
 
 (def vertices
