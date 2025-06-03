@@ -8,7 +8,7 @@
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil]
            [org.lwjgl.system MemoryStack]
-           [org.joml Matrix4f])
+           [org.joml Matrix4f Vector3f])
   (:gen-class))
 
 (def mix-param (atom 0.5))
@@ -32,6 +32,8 @@
           wall (texture/load-texture "resources/textures/wall.jpg")
           smiley (texture/load-texture-with-alpha "resources/textures/awesomeface.png")
           cube (coordsys/create-vertex-array coordsys/vertices)
+          mat4 (new Matrix4f)
+          pivot (new Vector3f (float 1) (float 0.3) (float 0.5))
           projection (coordsys/perspective (new Matrix4f))
           view (coordsys/view (new Matrix4f))]
       (GL33/glUseProgram shader-program)
@@ -69,15 +71,17 @@
         (GL33/glBindTexture GL33/GL_TEXTURE_2D smiley)
         (GL33/glUseProgram shader-program)
 
-        (let [model (coordsys/rotate-model-2 (new Matrix4f) (GLFW/glfwGetTime))]
+        (GL33/glBindVertexArray cube)
+
+        (doseq [[position angle] (partition 2 (interleave coordsys/cube-positions (range 20 400 20)))]
+          (.translation mat4 position)
+          (.rotate mat4 (org.joml.Math/toRadians (float angle)) pivot)
           (with-open [stack (MemoryStack/stackPush)]
             (GL33/glUniformMatrix4fv
               (GL33/glGetUniformLocation shader-program "model")
               false
-              (.get model (.mallocFloat stack 16)))))
-
-        (GL33/glBindVertexArray cube)
-        (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36)
+              (.get mat4 (.mallocFloat stack 16))))
+          (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36))
 
         (GLFW/glfwSwapBuffers window)
         (GLFW/glfwPollEvents))))
