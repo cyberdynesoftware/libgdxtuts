@@ -75,7 +75,9 @@
 
         (doseq [[position angle] (partition 2 (interleave coordsys/cube-positions (range 20 400 20)))]
           (.translation mat4 position)
-          (.rotate mat4 (org.joml.Math/toRadians (float angle)) pivot)
+          (if (some #{angle} [20 80 140 200])
+            (.rotate mat4 (float (GLFW/glfwGetTime)) pivot)
+            (.rotate mat4 (org.joml.Math/toRadians (float angle)) pivot))
           (with-open [stack (MemoryStack/stackPush)]
             (GL33/glUniformMatrix4fv
               (GL33/glGetUniformLocation shader-program "model")
