@@ -3,7 +3,8 @@
             [learnopengl.shader :as shader]
             [learnopengl.texture :as texture]
             [learnopengl.transformations :as trans]
-            [learnopengl.coordinate-systems :as coordsys])
+            [learnopengl.coordinate-systems :as coordsys]
+            [learnopengl.camera :as cam])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallbackI]
            [org.lwjgl.opengl GL GL33]
            [org.lwjgl.system MemoryUtil]
@@ -34,8 +35,7 @@
           cube (coordsys/create-vertex-array coordsys/vertices)
           mat4 (new Matrix4f)
           pivot (new Vector3f (float 1) (float 0.3) (float 0.5))
-          projection (coordsys/perspective (new Matrix4f))
-          view (coordsys/view (new Matrix4f))]
+          projection (coordsys/perspective (new Matrix4f))]
       (GL33/glUseProgram shader-program)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "ourTexture") 0)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "otherTexture") 1)
@@ -45,12 +45,6 @@
           (GL33/glGetUniformLocation shader-program "projection")
           false
           (.get projection (.mallocFloat stack 16))))
-
-      (with-open [stack (MemoryStack/stackPush)]
-        (GL33/glUniformMatrix4fv
-          (GL33/glGetUniformLocation shader-program "view")
-          false
-          (.get view (.mallocFloat stack 16))))
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
@@ -84,6 +78,12 @@
               false
               (.get mat4 (.mallocFloat stack 16))))
           (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36))
+
+        (with-open [stack (MemoryStack/stackPush)]
+          (GL33/glUniformMatrix4fv
+            (GL33/glGetUniformLocation shader-program "view")
+            false
+            (.get (cam/camera (GLFW/glfwGetTime)) (.mallocFloat stack 16))))
 
         (GLFW/glfwSwapBuffers window)
         (GLFW/glfwPollEvents))))

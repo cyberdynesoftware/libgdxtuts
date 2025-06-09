@@ -13,7 +13,7 @@
 
 (defn perspective
   [mat4]
-  (.perspective mat4 (org.joml.Math/toRadians (float 45)) (float (/ 4 3)) (float 0.1) (float 100)))
+  (.perspective mat4 (org.joml.Math/toRadians (float 75)) (float (/ 4 3)) (float 0.1) (float 100)))
 
 (defn rotate-model
   [mat4]
