@@ -1,21 +1,28 @@
 (ns learnopengl.camera
   (:import [org.joml Matrix4f Vector3f]))
 
-(def radius 10)
+(def speed (float 2.5))
 
 (def view (new Matrix4f))
 
-(def position (new Vector3f))
+(def position (new Vector3f (float 0) (float 0) (float 3)))
 
-(def target (new Vector3f))
+(def front (new Vector3f (float 0) (float 0) (float -1)))
 
 (def up (new Vector3f (float 0) (float 1) (float 0)))
 
 (defn camera
   [delta]
-  (let [cam-x (float (* (Math/sin delta) radius))
-        cam-z (float (* (Math/cos delta) radius))]
-    (.setLookAt view
-                (.set position cam-x (float 0) cam-z)
-                target
-                up)))
+  (.setLookAt view position (.add front position) up)
+  (.set front (float 0) (float 0) (float -1))
+  view)
+
+(defn WS
+  [sign delta]
+  (.add position (.mul front (float (* sign delta speed))))
+  (.set front (float 0) (float 0) (float -1)))
+
+(defn AD
+  [sign delta]
+  (.add position (.mul (.normalize (.cross front up)) (float (* sign delta speed))))
+  (.set front (float 0) (float 0) (float -1)))

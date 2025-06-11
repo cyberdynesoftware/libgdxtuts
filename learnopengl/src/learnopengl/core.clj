@@ -14,6 +14,8 @@
 
 (def mix-param (atom 0.5))
 
+(def last-frame (atom 0))
+
 (defn -main
   "learnopengl hello window"
   [& args]
@@ -47,46 +49,57 @@
           (.get projection (.mallocFloat stack 16))))
 
       (while (not (GLFW/glfwWindowShouldClose window))
-        (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
-          (GLFW/glfwSetWindowShouldClose window true))
-        (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_UP) GLFW/GLFW_PRESS)
-          (swap! mix-param (fn [current args] (if (< current 1.0) (+ current args) 1.0)) 0.005))
-        (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_DOWN) GLFW/GLFW_PRESS)
-          (swap! mix-param (fn [current args] (if (> current 0.0) (- current args) 0.0)) 0.005))
+        (let [now (GLFW/glfwGetTime)
+              delta (- now @last-frame)]
+          (reset! last-frame now)
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_ESCAPE) GLFW/GLFW_PRESS)
+            (GLFW/glfwSetWindowShouldClose window true))
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_UP) GLFW/GLFW_PRESS)
+            (swap! mix-param (fn [current args] (if (< current 1.0) (+ current args) 1.0)) 0.005))
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_DOWN) GLFW/GLFW_PRESS)
+            (swap! mix-param (fn [current args] (if (> current 0.0) (- current args) 0.0)) 0.005))
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_W) GLFW/GLFW_PRESS)
+            (cam/WS 1 delta))
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_S) GLFW/GLFW_PRESS)
+            (cam/WS -1 delta))
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_A) GLFW/GLFW_PRESS)
+            (cam/AD -1 delta))
+          (when (= (GLFW/glfwGetKey window GLFW/GLFW_KEY_D) GLFW/GLFW_PRESS)
+            (cam/AD 1 delta))
 
-        (GL33/glUniform1f (GL33/glGetUniformLocation shader-program "mix_param") (float @mix-param))
+          (GL33/glUniform1f (GL33/glGetUniformLocation shader-program "mix_param") (float @mix-param))
 
-        (GL33/glClearColor (float 0.2) (float 0.3) (float 0.3) (float 1))
-        (GL33/glClear (bit-or GL33/GL_COLOR_BUFFER_BIT GL33/GL_DEPTH_BUFFER_BIT))
+          (GL33/glClearColor (float 0.2) (float 0.3) (float 0.3) (float 1))
+          (GL33/glClear (bit-or GL33/GL_COLOR_BUFFER_BIT GL33/GL_DEPTH_BUFFER_BIT))
 
-        (GL33/glActiveTexture GL33/GL_TEXTURE0)
-        (GL33/glBindTexture GL33/GL_TEXTURE_2D wall)
-        (GL33/glActiveTexture GL33/GL_TEXTURE1)
-        (GL33/glBindTexture GL33/GL_TEXTURE_2D smiley)
-        (GL33/glUseProgram shader-program)
+          (GL33/glActiveTexture GL33/GL_TEXTURE0)
+          (GL33/glBindTexture GL33/GL_TEXTURE_2D wall)
+          (GL33/glActiveTexture GL33/GL_TEXTURE1)
+          (GL33/glBindTexture GL33/GL_TEXTURE_2D smiley)
+          (GL33/glUseProgram shader-program)
 
-        (GL33/glBindVertexArray cube)
+          (GL33/glBindVertexArray cube)
 
-        (doseq [[position angle] (partition 2 (interleave coordsys/cube-positions (range 20 400 20)))]
-          (.translation mat4 position)
-          (if (some #{angle} [20 80 140 200])
-            (.rotate mat4 (float (GLFW/glfwGetTime)) pivot)
-            (.rotate mat4 (org.joml.Math/toRadians (float angle)) pivot))
+          (doseq [[position angle] (partition 2 (interleave coordsys/cube-positions (range 20 400 20)))]
+            (.translation mat4 position)
+            (if (some #{angle} [20 80 140 200])
+              (.rotate mat4 (float (GLFW/glfwGetTime)) pivot)
+              (.rotate mat4 (org.joml.Math/toRadians (float angle)) pivot))
+            (with-open [stack (MemoryStack/stackPush)]
+              (GL33/glUniformMatrix4fv
+                (GL33/glGetUniformLocation shader-program "model")
+                false
+                (.get mat4 (.mallocFloat stack 16))))
+            (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36))
+
           (with-open [stack (MemoryStack/stackPush)]
             (GL33/glUniformMatrix4fv
-              (GL33/glGetUniformLocation shader-program "model")
+              (GL33/glGetUniformLocation shader-program "view")
               false
-              (.get mat4 (.mallocFloat stack 16))))
-          (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36))
+              (.get (cam/camera (GLFW/glfwGetTime)) (.mallocFloat stack 16))))
 
-        (with-open [stack (MemoryStack/stackPush)]
-          (GL33/glUniformMatrix4fv
-            (GL33/glGetUniformLocation shader-program "view")
-            false
-            (.get (cam/camera (GLFW/glfwGetTime)) (.mallocFloat stack 16))))
-
-        (GLFW/glfwSwapBuffers window)
-        (GLFW/glfwPollEvents))))
+          (GLFW/glfwSwapBuffers window)
+          (GLFW/glfwPollEvents)))))
 
   (GLFW/glfwTerminate)
   (println "So long..."))
