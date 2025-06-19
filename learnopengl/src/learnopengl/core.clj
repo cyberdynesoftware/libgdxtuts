@@ -28,6 +28,8 @@
     (GLFW/glfwMakeContextCurrent window)
     (GL/createCapabilities)
     (GL33/glEnable GL33/GL_DEPTH_TEST)
+    (GLFW/glfwSetInputMode window GLFW/GLFW_CURSOR GLFW/GLFW_CURSOR_DISABLED)
+    (GLFW/glfwSetCursorPosCallback window cam/cursor-callback)
 
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
