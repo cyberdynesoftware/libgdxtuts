@@ -11,10 +11,6 @@
   [mat4]
   (.translate mat4 (new Vector3f (float 0) (float 0) (float -3))))
 
-(defn perspective
-  [mat4]
-  (.perspective mat4 (org.joml.Math/toRadians (float 75)) (float (/ 4 3)) (float 0.1) (float 100)))
-
 (defn rotate-model
   [mat4]
   (.rotate mat4 (org.joml.Math/toRadians (float -55)) (new Vector3f (float 1) (float 0) (float 0))))

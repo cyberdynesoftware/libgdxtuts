@@ -30,6 +30,7 @@
     (GL33/glEnable GL33/GL_DEPTH_TEST)
     (GLFW/glfwSetInputMode window GLFW/GLFW_CURSOR GLFW/GLFW_CURSOR_DISABLED)
     (GLFW/glfwSetCursorPosCallback window cam/cursor-callback)
+    (GLFW/glfwSetScrollCallback window cam/scroll-callback)
 
     (let [vertex-shader-source (slurp "resources/shaders/vertex-shader.vs")
           fragment-shader-source (slurp "resources/shaders/fragment-shader.fs")
@@ -38,17 +39,10 @@
           smiley (texture/load-texture-with-alpha "resources/textures/awesomeface.png")
           cube (coordsys/create-vertex-array coordsys/vertices)
           mat4 (new Matrix4f)
-          pivot (new Vector3f (float 1) (float 0.3) (float 0.5))
-          projection (coordsys/perspective (new Matrix4f))]
+          pivot (new Vector3f (float 1) (float 0.3) (float 0.5))]
       (GL33/glUseProgram shader-program)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "ourTexture") 0)
       (GL33/glUniform1i (GL33/glGetUniformLocation shader-program "otherTexture") 1)
-
-      (with-open [stack (MemoryStack/stackPush)]
-        (GL33/glUniformMatrix4fv
-          (GL33/glGetUniformLocation shader-program "projection")
-          false
-          (.get projection (.mallocFloat stack 16))))
 
       (while (not (GLFW/glfwWindowShouldClose window))
         (let [now (GLFW/glfwGetTime)
@@ -87,18 +81,11 @@
             (if (some #{angle} [20 80 140 200])
               (.rotate mat4 (float (GLFW/glfwGetTime)) pivot)
               (.rotate mat4 (org.joml.Math/toRadians (float angle)) pivot))
-            (with-open [stack (MemoryStack/stackPush)]
-              (GL33/glUniformMatrix4fv
-                (GL33/glGetUniformLocation shader-program "model")
-                false
-                (.get mat4 (.mallocFloat stack 16))))
+            (shader/load-matrix shader-program "model" mat4)
             (GL33/glDrawArrays GL33/GL_TRIANGLES 0 36))
 
-          (with-open [stack (MemoryStack/stackPush)]
-            (GL33/glUniformMatrix4fv
-              (GL33/glGetUniformLocation shader-program "view")
-              false
-              (.get (cam/camera (GLFW/glfwGetTime)) (.mallocFloat stack 16))))
+          (shader/load-matrix shader-program "view" (cam/camera (GLFW/glfwGetTime)))
+          (shader/load-matrix shader-program "projection" (cam/perspective))
 
           (GLFW/glfwSwapBuffers window)
           (GLFW/glfwPollEvents)))))

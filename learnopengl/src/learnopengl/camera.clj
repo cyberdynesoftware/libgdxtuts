@@ -1,6 +1,6 @@
 (ns learnopengl.camera
   (:import [org.joml Matrix4f Vector3f]
-           [org.lwjgl.glfw GLFWCursorPosCallbackI]))
+           [org.lwjgl.glfw GLFWCursorPosCallbackI GLFWScrollCallbackI]))
 
 (def speed (float 2.5))
 
@@ -64,3 +64,21 @@
                 (float (Math/sin (Math/toRadians @pitch)))
                 (float (* (Math/sin (Math/toRadians @yaw))
                           (Math/cos (Math/toRadians @pitch))))))))))
+
+(def perspective-matrix (new Matrix4f))
+
+(def fov (atom 45))
+
+(def scroll-callback
+  (reify GLFWScrollCallbackI
+    (invoke [_ _ _ y]
+      (swap! fov - (* y 0.1))
+      (swap! fov #(if (< % 1)
+                    1
+                    (if (> % 45)
+                      45
+                      %))))))
+
+(defn perspective
+  []
+  (.setPerspective perspective-matrix (float @fov) (float (/ 4 3)) (float 0.1) (float 100)))

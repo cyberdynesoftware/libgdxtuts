@@ -1,5 +1,6 @@
 (ns learnopengl.shader
-  (:import [org.lwjgl.opengl GL33]))
+  (:import [org.lwjgl.opengl GL33]
+           [org.lwjgl.system MemoryStack]))
 
 (defn create-shader
   [shader-type source]
@@ -32,3 +33,11 @@
     (GL33/glDeleteShader vertex-shader)
     (GL33/glDeleteShader fragment-shader)
     shader-program))
+
+(defn load-matrix
+  [shader-program location-id matrix]
+  (with-open [stack (MemoryStack/stackPush)]
+    (GL33/glUniformMatrix4fv
+      (GL33/glGetUniformLocation shader-program location-id)
+      false
+      (.get matrix (.mallocFloat stack 16)))))
