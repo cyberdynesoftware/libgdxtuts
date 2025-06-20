@@ -21,11 +21,13 @@
 (defn WS
   [sign delta]
   (.set front-temp front)
-  (.add position (.mul front-temp (float (* sign delta speed)))))
+  (.setComponent front-temp 1 (float 0))
+  (.add position (.mul (.normalize front-temp) (float (* sign delta speed)))))
 
 (defn AD
   [sign delta]
   (.set front-temp front)
+  (.setComponent front-temp 1 (float 0))
   (.add position (.mul (.normalize (.cross front-temp up)) (float (* sign delta speed)))))
 
 (def last-x (atom 200))
